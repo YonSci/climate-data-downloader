@@ -10,7 +10,7 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <style>
-    body { padding-top: 60px; }
+    body { padding-top: 120px; }
     .skip-link {
       position: absolute;
       top: -40px;
@@ -20,9 +20,7 @@
       padding: 8px;
       z-index: 100;
     }
-    .skip-link:focus {
-      top: 0;
-    }
+    .skip-link:focus { top: 0; }
     #confirmationCard, #urlCard { display: none; }
     #spatial_map { height: 300px; margin-top: 1rem; }
     #spinner, #spinnerText {
@@ -83,6 +81,7 @@
         <div class="card-header">Data Parameters</div>
         <div class="card-body">
           <div class="row">
+            <!-- Dataset -->
             <div class="col-md-4 mb-3">
               <label for="dataset" class="form-label" data-bs-toggle="tooltip" title="Choose the dataset source (e.g., CHIRPS or CPC)">Dataset:</label>
               <select id="dataset" name="dataset" class="form-select">
@@ -90,28 +89,30 @@
                 <option value="CPC">CPC</option>
               </select>
             </div>
+            <!-- Version (updated dynamically) -->
             <div class="col-md-4 mb-3">
-              <label for="version" class="form-label" data-bs-toggle="tooltip" title="Select the dataset version. For CHIRPS, only v2.0 and v3.0 are available">Version:</label>
+              <label for="version" class="form-label" data-bs-toggle="tooltip" title="For CPC, this is fixed to v1p0; for CHIRPS, choose between v2.0 and v3.0.">Version:</label>
               <select id="version" name="version" class="form-select">
-                <option value="v2.0" selected>v2.0</option>
-                <option value="v3.0">v3.0</option>
+                <!-- Options set dynamically -->
               </select>
             </div>
+            <!-- Frequency (updated dynamically) -->
             <div class="col-md-4 mb-3">
-              <label for="frequency" class="form-label" data-bs-toggle="tooltip" title="Choose how frequently data is recorded">Frequency:</label>
+              <label for="frequency" class="form-label" data-bs-toggle="tooltip" title="For CPC, this is fixed to daily; for CHIRPS, choose your desired frequency.">Frequency:</label>
               <select id="frequency" name="frequency" class="form-select">
-                <!-- Options will be populated dynamically -->
+                <!-- Options set dynamically -->
               </select>
             </div>
           </div>
           <div class="row">
+            <!-- Resolution (updated dynamically) -->
             <div class="col-md-4 mb-3">
-              <label for="resolution" class="form-label" data-bs-toggle="tooltip" title="Select the spatial resolution">Resolution:</label>
+              <label for="resolution" class="form-label" data-bs-toggle="tooltip" title="For CPC, this is fixed to 0.5; for CHIRPS, select 0.05 or 0.25.">Resolution:</label>
               <select id="resolution" name="resolution" class="form-select">
-                <option value="0.05">0.05</option>
-                <option value="0.25">0.25</option>
+                <!-- Options set dynamically -->
               </select>
             </div>
+            <!-- Variable -->
             <div class="col-md-4 mb-3">
               <label for="variable" class="form-label" data-bs-toggle="tooltip" title="The variable to download (fixed to precipitation)">Variable:</label>
               <input type="text" class="form-control" id="variable" name="variable" value="precipitation" readonly>
@@ -135,7 +136,7 @@
               <select id="start_month" name="start_month" class="form-select"></select>
             </div>
             <div class="col-md-4 mb-3">
-              <label for="start_year" class="form-label" data-bs-toggle="tooltip" title="Select the starting year">Year:</label>
+              <label for="start_year" class="form-label" data-bs-toggle="tooltip" title="For CPC, start year begins at 1979; for CHIRPS, it begins at 1981">Year:</label>
               <select id="start_year" name="start_year" class="form-select"></select>
             </div>
           </div>
@@ -150,7 +151,7 @@
               <select id="end_month" name="end_month" class="form-select"></select>
             </div>
             <div class="col-md-4 mb-3">
-              <label for="end_year" class="form-label" data-bs-toggle="tooltip" title="Select the ending year">Year:</label>
+              <label for="end_year" class="form-label" data-bs-toggle="tooltip" title="For both CPC and CHIRPS, use the user input value">Year:</label>
               <select id="end_year" name="end_year" class="form-select"></select>
             </div>
           </div>
@@ -240,11 +241,11 @@
           <div class="accordion-body">
             <ul>
               <li><strong>Dataset:</strong> Choose between CHIRPS and CPC data sources.</li>
-              <li><strong>Version:</strong> For CHIRPS, only v2.0 and v3.0 are available.</li>
-              <li><strong>Frequency:</strong> Indicates the temporal resolution (daily, daily‑improved, dekad, monthly).</li>
-              <li><strong>Resolution:</strong> Spatial resolution of the data (0.05° or 0.25°).</li>
-              <li><strong>Variable:</strong> The variable being downloaded (fixed to precipitation).</li>
-              <li><strong>Temporal Filtering:</strong> Select the start and end dates for the data.</li>
+              <li><strong>Version:</strong> For CHIRPS, choose between v2.0 and v3.0; for CPC, the version is fixed to v1p0.</li>
+              <li><strong>Frequency:</strong> For CPC, this is fixed to daily; for CHIRPS, choose your desired frequency.</li>
+              <li><strong>Resolution:</strong> For CPC, the resolution is fixed to 0.5; for CHIRPS, select 0.05 or 0.25.</li>
+              <li><strong>Variable:</strong> The variable is fixed to precipitation.</li>
+              <li><strong>Temporal Filtering:</strong> For CPC, the start year begins at 1979; for CHIRPS, it begins at 1981. The end date is taken from the user input.</li>
               <li><strong>Spatial Filtering:</strong> Define the geographic area using latitude and longitude.</li>
             </ul>
           </div>
@@ -259,246 +260,269 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   
   <script>
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(tooltipTriggerEl => {
-      new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-    
-    // Inline validation for spatial inputs
-    function validateSpatialInput(input, min, max) {
-      const value = parseFloat(input.value);
-      if (isNaN(value) || value < min || value > max) {
-        input.classList.add("is-invalid");
-      } else {
-        input.classList.remove("is-invalid");
+    document.addEventListener("DOMContentLoaded", function() {
+      // Toggle Input Method (JSON upload)
+      const fillFormRadio = document.getElementById("fillFormRadio");
+      const uploadJSONRadio = document.getElementById("uploadJSONRadio");
+      const uploadJSONContainer = document.getElementById("uploadJSONContainer");
+      const loadJSONBtn = document.getElementById("loadJSONBtn");
+      const clearJSONBtn = document.getElementById("clearJSONBtn");
+
+      function toggleInputMethod() {
+        uploadJSONContainer.style.display = uploadJSONRadio.checked ? "block" : "none";
       }
-    }
-    document.getElementById("lon_min").addEventListener("blur", function() {
-      validateSpatialInput(this, -180, 179.95);
-    });
-    document.getElementById("lon_max").addEventListener("blur", function() {
-      validateSpatialInput(this, -180, 179.95);
-    });
-    document.getElementById("lat_min").addEventListener("blur", function() {
-      validateSpatialInput(this, -49.975, 49.975);
-    });
-    document.getElementById("lat_max").addEventListener("blur", function() {
-      validateSpatialInput(this, -49.975, 49.975);
-    });
-    
-    // --- Frequency Options Update ---
-    function updateFrequencyOptions() {
-      const dataset = document.getElementById("dataset").value;
-      const version = document.getElementById("version").value;
-      const frequencySelect = document.getElementById("frequency");
-      frequencySelect.innerHTML = "";
-      if (dataset === "CHIRPS" && version === "v3.0") {
-        let opt = document.createElement("option");
-        opt.value = "monthly";
-        opt.text = "monthly";
-        frequencySelect.appendChild(opt);
-      } else {
-        const options = ["daily", "daily-improved", "dekad", "monthly"];
-        options.forEach(optText => {
-          let opt = document.createElement("option");
-          opt.value = optText;
-          opt.text = optText;
-          frequencySelect.appendChild(opt);
-        });
-      }
-    }
-    updateFrequencyOptions();
-    document.getElementById("dataset").addEventListener("change", updateFrequencyOptions);
-    document.getElementById("version").addEventListener("change", updateFrequencyOptions);
-    
-    // --- Input Method Handling ---
-    const fillFormRadio = document.getElementById("fillFormRadio");
-    const uploadJSONRadio = document.getElementById("uploadJSONRadio");
-    const uploadJSONContainer = document.getElementById("uploadJSONContainer");
-    const loadJSONBtn = document.getElementById("loadJSONBtn");
-    const clearJSONBtn = document.getElementById("clearJSONBtn");
-    function toggleInputMethod() {
-      uploadJSONContainer.style.display = uploadJSONRadio.checked ? "block" : "none";
-    }
-    fillFormRadio.addEventListener("change", toggleInputMethod);
-    uploadJSONRadio.addEventListener("change", toggleInputMethod);
-    
-    loadJSONBtn.addEventListener("click", function() {
-      const file = document.getElementById("uploadJSON").files[0];
-      if (!file) {
-        alert("Please select a JSON file.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const params = JSON.parse(e.target.result);
-          document.getElementById("dataset").value = params.dataset || "";
-          document.getElementById("version").value = params.version || "";
-          document.getElementById("frequency").value = params.frequency || "";
-          document.getElementById("resolution").value = params.resolution || "";
-          document.getElementById("variable").value = params.variable || "";
-          document.getElementById("start_day").value = params.start_day || "";
-          document.getElementById("start_month").value = params.start_month || "";
-          document.getElementById("start_year").value = params.start_year || "";
-          document.getElementById("end_day").value = params.end_day || "";
-          document.getElementById("end_month").value = params.end_month || "";
-          document.getElementById("end_year").value = params.end_year || "";
-          document.getElementById("lon_min").value = params.lon_min || "";
-          document.getElementById("lon_max").value = params.lon_max || "";
-          document.getElementById("lat_min").value = params.lat_min || "";
-          document.getElementById("lat_max").value = params.lat_max || "";
-          alert("Parameters loaded successfully.");
-          updateFrequencyOptions();
-        } catch (err) {
-          alert("Error loading JSON file.");
-          console.error(err);
-        }
-      };
-      reader.readAsText(file);
-    });
-    
-    clearJSONBtn.addEventListener("click", function() {
-      document.getElementById("uploadJSON").value = "";
-      fillFormRadio.checked = true;
+
+      fillFormRadio.addEventListener("change", toggleInputMethod);
+      uploadJSONRadio.addEventListener("change", toggleInputMethod);
+      // Initialize the input method state on page load.
       toggleInputMethod();
-      alert("JSON input cleared. You can now fill out the form.");
-    });
-    
-    // --- Populate Temporal Filtering Dropdowns ---
-    function populateTemporalFilters() {
-      const startDaySelect = document.getElementById("start_day");
-      const endDaySelect = document.getElementById("end_day");
-      for (let d = 1; d <= 31; d++) {
-        let dayStr = d.toString().padStart(2, '0');
-        let opt1 = document.createElement("option");
-        opt1.value = dayStr;
-        opt1.text = dayStr;
-        startDaySelect.appendChild(opt1);
-        let opt2 = document.createElement("option");
-        opt2.value = dayStr;
-        opt2.text = dayStr;
-        endDaySelect.appendChild(opt2);
+
+      // --- Update Version Options based on Dataset ---
+      function updateVersionOptions() {
+        const dataset = document.getElementById("dataset").value;
+        const versionSelect = document.getElementById("version");
+        versionSelect.innerHTML = "";
+        if (dataset === "CPC") {
+          let opt = document.createElement("option");
+          opt.value = "v1p0";
+          opt.text = "v1p0";
+          versionSelect.appendChild(opt);
+          versionSelect.disabled = true;
+        } else {
+          let opt1 = document.createElement("option");
+          opt1.value = "v2.0";
+          opt1.text = "v2.0";
+          versionSelect.appendChild(opt1);
+          let opt2 = document.createElement("option");
+          opt2.value = "v3.0";
+          opt2.text = "v3.0";
+          versionSelect.appendChild(opt2);
+          versionSelect.disabled = false;
+        }
       }
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      const startMonthSelect = document.getElementById("start_month");
-      const endMonthSelect = document.getElementById("end_month");
-      months.forEach(m => {
-        let opt1 = document.createElement("option");
-        opt1.value = m;
-        opt1.text = m;
-        startMonthSelect.appendChild(opt1);
-        let opt2 = document.createElement("option");
-        opt2.value = m;
-        opt2.text = m;
-        endMonthSelect.appendChild(opt2);
+      
+      // --- Update Frequency Options based on Dataset ---
+      function updateFrequencyOptions() {
+        const dataset = document.getElementById("dataset").value;
+        const frequencySelect = document.getElementById("frequency");
+        frequencySelect.innerHTML = "";
+        if (dataset === "CPC") {
+          let opt = document.createElement("option");
+          opt.value = "daily";
+          opt.text = "daily";
+          frequencySelect.appendChild(opt);
+          frequencySelect.disabled = true;
+        } else {
+          frequencySelect.disabled = false;
+          const options = ["daily", "daily-improved", "dekad", "monthly"];
+          options.forEach(optText => {
+            let opt = document.createElement("option");
+            opt.value = optText;
+            opt.text = optText;
+            frequencySelect.appendChild(opt);
+          });
+        }
+      }
+      
+      // --- Update Resolution Options based on Dataset ---
+      function updateResolutionOptions() {
+        const dataset = document.getElementById("dataset").value;
+        const resolutionSelect = document.getElementById("resolution");
+        resolutionSelect.innerHTML = "";
+        if (dataset === "CPC") {
+          let opt = document.createElement("option");
+          opt.value = "0.5";
+          opt.text = "0.5";
+          resolutionSelect.appendChild(opt);
+          resolutionSelect.disabled = true;
+        } else {
+          resolutionSelect.disabled = false;
+          const options = ["0.05", "0.25"];
+          options.forEach(optText => {
+            let opt = document.createElement("option");
+            opt.value = optText;
+            opt.text = optText;
+            resolutionSelect.appendChild(opt);
+          });
+        }
+      }
+      
+      // --- Update Temporal Filtering Dropdowns based on Dataset ---
+      function populateTemporalFilters() {
+        const dataset = document.getElementById("dataset").value;
+        const startYearValue = (dataset === "CPC") ? 1979 : 1981;
+        const endYearValue = 2025;
+        
+        const startDaySelect = document.getElementById("start_day");
+        const endDaySelect = document.getElementById("end_day");
+        startDaySelect.innerHTML = "";
+        endDaySelect.innerHTML = "";
+        for (let d = 1; d <= 31; d++) {
+          let dayStr = d.toString().padStart(2, '0');
+          let opt1 = document.createElement("option");
+          opt1.value = dayStr;
+          opt1.text = dayStr;
+          startDaySelect.appendChild(opt1);
+          let opt2 = document.createElement("option");
+          opt2.value = dayStr;
+          opt2.text = dayStr;
+          endDaySelect.appendChild(opt2);
+        }
+        
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const startMonthSelect = document.getElementById("start_month");
+        const endMonthSelect = document.getElementById("end_month");
+        startMonthSelect.innerHTML = "";
+        endMonthSelect.innerHTML = "";
+        months.forEach(m => {
+          let opt1 = document.createElement("option");
+          opt1.value = m;
+          opt1.text = m;
+          startMonthSelect.appendChild(opt1);
+          let opt2 = document.createElement("option");
+          opt2.value = m;
+          opt2.text = m;
+          endMonthSelect.appendChild(opt2);
+        });
+        
+        const startYearSelect = document.getElementById("start_year");
+        const endYearSelect = document.getElementById("end_year");
+        startYearSelect.innerHTML = "";
+        endYearSelect.innerHTML = "";
+        for (let y = startYearValue; y <= endYearValue; y++) {
+          let opt1 = document.createElement("option");
+          opt1.value = y;
+          opt1.text = y;
+          startYearSelect.appendChild(opt1);
+          let opt2 = document.createElement("option");
+          opt2.value = y;
+          opt2.text = y;
+          endYearSelect.appendChild(opt2);
+        }
+        if (dataset === "CPC") {
+          let presentOpt = document.createElement("option");
+          presentOpt.value = "Present";
+          presentOpt.text = "Present";
+          endYearSelect.appendChild(presentOpt);
+        }
+      }
+      
+      // --- Update all dataset-dependent options ---
+      function updateDatasetDependentOptions() {
+        updateVersionOptions();
+        updateFrequencyOptions();
+        updateResolutionOptions();
+        populateTemporalFilters();
+      }
+      
+      updateDatasetDependentOptions();
+      document.getElementById("dataset").addEventListener("change", updateDatasetDependentOptions);
+      
+      // --- REVIEW & CONFIRM LOGIC ---
+      const reviewBtn = document.getElementById("reviewSelections");
+      const confirmCard = document.getElementById("confirmationCard");
+      const selectionP = document.getElementById("selectionSummary");
+      const goBackBtn = document.getElementById("goBackBtn");
+      
+      reviewBtn.addEventListener("click", function () {
+        reviewBtn.style.display = "none";
+        
+        let datasetSel = document.getElementById("dataset").value;
+        let versionFriendly = document.getElementById("version").value;
+        let frequencyFriendly = document.getElementById("frequency").value;
+        let resolutionFriendly = document.getElementById("resolution").value;
+        let variableFriendly = document.getElementById("variable").value;
+        
+        let start_day = document.getElementById("start_day").value;
+        let start_month = document.getElementById("start_month").value;
+        let start_year = document.getElementById("start_year").value;
+        let end_day = document.getElementById("end_day").value;
+        let end_month = document.getElementById("end_month").value;
+        let end_year = document.getElementById("end_year").value;
+        let temporal = `Start: ${start_day} ${start_month} ${start_year} to End: ${end_day} ${end_month} ${end_year}`;
+        
+        let lonMin = document.getElementById("lon_min").value;
+        let lonMax = document.getElementById("lon_max").value;
+        let latMin = document.getElementById("lat_min").value;
+        let latMax = document.getElementById("lat_max").value;
+        let spatial = `Longitude: ${lonMin} to ${lonMax} degree east, Latitude: ${latMin} to ${latMax} degree north`;
+        
+        let summary = `
+          <h5>Your Selections:</h5>
+          <ul>
+            <li><strong>Dataset:</strong> ${datasetSel}</li>
+            <li><strong>Version:</strong> ${versionFriendly}</li>
+            <li><strong>Frequency:</strong> ${frequencyFriendly}</li>
+            <li><strong>Resolution:</strong> ${resolutionFriendly}</li>
+            <li><strong>Variable:</strong> ${variableFriendly}</li>
+            <li><strong>Temporal Filter:</strong> ${temporal}</li>
+            <li><strong>Spatial Filter:</strong> ${spatial}</li>
+          </ul>
+        `;
+        selectionP.innerHTML = summary;
+        confirmCard.style.display = "block";
+        document.getElementById("urlCard").style.display = "block";
       });
-      const startYearSelect = document.getElementById("start_year");
-      const endYearSelect = document.getElementById("end_year");
-      for (let y = 1981; y <= 2025; y++) {
-        let opt1 = document.createElement("option");
-        opt1.value = y;
-        opt1.text = y;
-        startYearSelect.appendChild(opt1);
-        let opt2 = document.createElement("option");
-        opt2.value = y;
-        opt2.text = y;
-        endYearSelect.appendChild(opt2);
-      }
-    }
-    populateTemporalFilters();
-    
-    // --- REVIEW & CONFIRM LOGIC ---
-    const reviewBtn = document.getElementById("reviewSelections");
-    const confirmCard = document.getElementById("confirmationCard");
-    const selectionP = document.getElementById("selectionSummary");
-    const goBackBtn = document.getElementById("goBackBtn");
-    
-    reviewBtn.addEventListener("click", function () {
-      reviewBtn.style.display = "none";
       
-      let datasetSel = document.getElementById("dataset").value;
-      let versionFriendly = document.getElementById("version").value;
-      let frequencyFriendly = document.getElementById("frequency").value;
-      let resolutionFriendly = document.getElementById("resolution").value;
-      let variableFriendly = document.getElementById("variable").value;
+      goBackBtn.addEventListener("click", function () {
+        confirmCard.style.display = "none";
+        reviewBtn.style.display = "block";
+      });
       
-      let start_day = document.getElementById("start_day").value;
-      let start_month = document.getElementById("start_month").value;
-      let start_year = document.getElementById("start_year").value;
-      let end_day = document.getElementById("end_day").value;
-      let end_month = document.getElementById("end_month").value;
-      let end_year = document.getElementById("end_year").value;
-      let temporal = `Start: ${start_day} ${start_month} ${start_year} to End: ${end_day} ${end_month} ${end_year}`;
+      // --- URL CONSTRUCTION & DOWNLOAD with Caching and Robust Error Handling ---
+      const constructURLBtn = document.getElementById("constructURLBtn");
+      const constructedURLInput = document.getElementById("constructedURL");
+      const downloadBtn = document.getElementById("downloadBtn");
       
-      let lonMin = document.getElementById("lon_min").value;
-      let lonMax = document.getElementById("lon_max").value;
-      let latMin = document.getElementById("lat_min").value;
-      let latMax = document.getElementById("lat_max").value;
-      let spatial = `Longitude: ${lonMin} to ${lonMax} degree east, Latitude: ${latMin} to ${latMax} degree north`;
-      
-      let summary = `
-        <h5>Your Selections:</h5>
-        <ul>
-          <li><strong>Dataset:</strong> ${datasetSel}</li>
-          <li><strong>Version:</strong> ${versionFriendly}</li>
-          <li><strong>Frequency:</strong> ${frequencyFriendly}</li>
-          <li><strong>Resolution:</strong> ${resolutionFriendly}</li>
-          <li><strong>Variable:</strong> ${variableFriendly}</li>
-          <li><strong>Temporal Filter:</strong> ${temporal}</li>
-          <li><strong>Spatial Filter:</strong> ${spatial}</li>
-        </ul>
-      `;
-      selectionP.innerHTML = summary;
-      confirmCard.style.display = "block";
-      document.getElementById("urlCard").style.display = "block";
-    });
-    
-    goBackBtn.addEventListener("click", function () {
-      confirmCard.style.display = "none";
-      reviewBtn.style.display = "block";
-    });
-    
-    // --- URL CONSTRUCTION & DOWNLOAD with Caching and Robust Error Handling ---
-    const constructURLBtn = document.getElementById("constructURLBtn");
-    const constructedURLInput = document.getElementById("constructedURL");
-    const downloadBtn = document.getElementById("downloadBtn");
-    
-    function constructURL() {
-      const baseURL = "https://iridl.ldeo.columbia.edu/SOURCES/";
-      
-      let datasetSel = document.getElementById("dataset").value;
-      let sourceParam = (datasetSel === "CHIRPS") ? ".UCSB" : ".CPC";
-      let datasetParam = (datasetSel === "CHIRPS") ? ".CHIRPS" : ".CPC";
-      
-      let versionVal = document.getElementById("version").value;
-      let versionParam = (versionVal === "v2.0") ? ".v2p0" : ".v3p0";
-      
-      let frequencyVal = document.getElementById("frequency").value;
-      let frequencyParam = "";
-      switch (frequencyVal) {
-        case "daily": frequencyParam = ".daily"; break;
-        case "daily-improved": frequencyParam = ".daily-improved"; break;
-        case "dekad": frequencyParam = ".dekad"; break;
-        case "monthly": frequencyParam = ".monthly"; break;
-      }
-      
-      // For CHIRPS v2.0 daily, daily-improved, and monthly include scope; for dekad remove scope.
-      // For CHIRPS v3.0 monthly include scope.
-      let scopeParam = "";
-      if (datasetSel === "CHIRPS" && versionVal === "v2.0" && (frequencyVal === "monthly" || frequencyVal === "daily" || frequencyVal === "daily-improved")) {
-        scopeParam = ".global";
-      }
-      if (datasetSel === "CHIRPS" && versionVal === "v3.0" && frequencyVal === "monthly") {
-        scopeParam = ".global";
-      }
-      
-      let timePart = "";
-      let variableParam = ".prcp"; // default variable
-      
-      if ((datasetSel === "CHIRPS") && ((versionVal === "v2.0" || versionVal === "v3.0") && frequencyVal === "monthly")) {
-        variableParam = ".precipitation";
+      function constructURL() {
+        const baseURL = "https://iridl.ldeo.columbia.edu/SOURCES/";
+        const datasetSel = document.getElementById("dataset").value;
+        
+        // For CPC, use a CPC-specific URL structure.
+        if (datasetSel === "CPC") {
+          const lonMin = document.getElementById("lon_min").value;
+          const lonMax = document.getElementById("lon_max").value;
+          const latMin = document.getElementById("lat_min").value;
+          const latMax = document.getElementById("lat_max").value;
+          const start_day = document.getElementById("start_day").value;
+          const start_month = document.getElementById("start_month").value;
+          const start_year = document.getElementById("start_year").value;
+          const end_day = document.getElementById("end_day").value;
+          const end_month = document.getElementById("end_month").value;
+          const end_year = document.getElementById("end_year").value;
+          const fullURL = "https://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/.UNIFIED_PRCP/.GAUGE_BASED/.GLOBAL/.v1p0/.REALTIME/.rain" +
+                          "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
+                          "Y/" + latMin + "/" + latMax + "/RANGE/" +
+                          "T/(" + start_day + "%20" + start_month + "%20" + start_year + ")/(" + end_day + "%20" + end_month + "%20" + end_year + ")/RANGE/data.nc";
+          constructedURLInput.value = fullURL;
+          return fullURL;
+        }
+        
+        // For CHIRPS, construct URL as before.
+        let sourceParam = ".UCSB";
+        let datasetParam = ".CHIRPS";
+        let versionVal = document.getElementById("version").value;
+        let versionParam = (versionVal === "v2.0") ? ".v2p0" : ".v3p0";
+        let frequencyVal = document.getElementById("frequency").value;
+        let frequencyParam = "";
+        switch (frequencyVal) {
+          case "daily": frequencyParam = ".daily"; break;
+          case "daily-improved": frequencyParam = ".daily-improved"; break;
+          case "dekad": frequencyParam = ".dekad"; break;
+          case "monthly": frequencyParam = ".monthly"; break;
+        }
+        
+        let scopeParam = "";
+        if (frequencyVal !== "dekad") {
+          scopeParam = ".global";
+        }
+        
+        let timePart = "";
+        let variableParam = ".prcp"; // default variable
+        if (frequencyVal === "monthly") {
+          variableParam = ".precipitation";
+        }
+        
         let start_day = document.getElementById("start_day").value;
         let start_month = document.getElementById("start_month").value;
         let start_year = document.getElementById("start_year").value;
@@ -507,269 +531,238 @@
         let end_year = document.getElementById("end_year").value;
         timePart = "T/" + start_day + "%20" + start_month + "%20" + start_year + "/" +
                    end_day + "%20" + end_month + "%20" + end_year + "/RANGE/data.nc";
-      } else if (datasetSel === "CHIRPS" && versionVal === "v2.0" && frequencyVal === "dekad") {
-        let start_month = document.getElementById("start_month").value;
-        let start_year = document.getElementById("start_year").value;
-        let end_month = document.getElementById("end_month").value;
-        let end_year = document.getElementById("end_year").value;
-        timePart = "T/" + start_month + "%20" + start_year + "/" + end_month + "%20" + end_year + "/RANGE/data.nc";
-      } else if (datasetSel === "CHIRPS" && versionVal === "v2.0" && (frequencyVal === "daily" || frequencyVal === "daily-improved")) {
-        variableParam = ".prcp";
-        let resolutionVal = document.getElementById("resolution").value;
-        let resolutionParam = (resolutionVal === "0.05") ? ".0p05" : ".0p25";
-        let start_day = document.getElementById("start_day").value;
-        let start_month = document.getElementById("start_month").value;
-        let start_year = document.getElementById("start_year").value;
-        let end_day = document.getElementById("end_day").value;
-        let end_month = document.getElementById("end_month").value;
-        let end_year = document.getElementById("end_year").value;
-        timePart = "T/" + start_day + "%20" + start_month + "%20" + start_year + "/" +
-                   end_day + "%20" + end_month + "%20" + end_year + "/RANGE/data.nc";
-        resolutionParam = "/" + resolutionParam;
-        fullURL = baseURL +
-          sourceParam + "/" +
-          datasetParam + "/" +
-          versionParam + "/" +
-          frequencyParam + "/" +
-          scopeParam + "/" +
-          resolutionParam.substring(1) + "/" +
-          variableParam +
-          "/X/" + document.getElementById("lon_min").value + "/" + document.getElementById("lon_max").value + "/RANGE/" +
-          "Y/" + document.getElementById("lat_min").value + "/" + document.getElementById("lat_max").value + "/RANGE/" +
-          timePart;
+        
+        let fullURL = "";
+        if (frequencyVal === "daily" || frequencyVal === "daily-improved") {
+          let resolutionVal = document.getElementById("resolution").value;
+          let resolutionParam = (resolutionVal === "0.05") ? ".0p05" : ".0p25";
+          fullURL = baseURL +
+            sourceParam + "/" +
+            datasetParam + "/" +
+            versionParam + "/" +
+            frequencyParam + "/" +
+            scopeParam + "/" +
+            resolutionParam.substring(1) + "/" +
+            variableParam +
+            "/X/" + document.getElementById("lon_min").value + "/" + document.getElementById("lon_max").value + "/RANGE/" +
+            "Y/" + document.getElementById("lat_min").value + "/" + document.getElementById("lat_max").value + "/RANGE/" +
+            timePart;
+        } else {
+          let resolutionVal = document.getElementById("resolution").value;
+          let resolutionParam = (resolutionVal === "0.05") ? ".0p05" : ".0p25";
+          fullURL = baseURL +
+            sourceParam + "/" +
+            datasetParam + "/" +
+            versionParam + "/" +
+            frequencyParam + "/" +
+            (scopeParam ? scopeParam + "/" : "") +
+            resolutionParam.substring(1) + "/" +
+            variableParam +
+            "/X/" + document.getElementById("lon_min").value + "/" + document.getElementById("lon_max").value + "/RANGE/" +
+            "Y/" + document.getElementById("lat_min").value + "/" + document.getElementById("lat_max").value + "/RANGE/" +
+            timePart;
+        }
         constructedURLInput.value = fullURL;
         return fullURL;
-      } else {
-        let resolutionVal = document.getElementById("resolution").value;
-        let resolutionParam = (resolutionVal === "0.05") ? ".0p05" : ".0p25";
-        let start_day = document.getElementById("start_day").value;
-        let start_month = document.getElementById("start_month").value;
-        let start_year = document.getElementById("start_year").value;
-        let end_day = document.getElementById("end_day").value;
-        let end_month = document.getElementById("end_month").value;
-        let end_year = document.getElementById("end_year").value;
-        timePart = "T/" + start_day + "%20" + start_month + "%20" + start_year + "/" +
-                   end_day + "%20" + end_month + "%20" + end_year + "/RANGE/data.nc";
-        resolutionParam = "/" + resolutionParam;
-        fullURL = baseURL +
-          sourceParam + "/" +
-          datasetParam + "/" +
-          versionParam + "/" +
-          frequencyParam + "/" +
-          (scopeParam ? scopeParam + "/" : "") +
-          resolutionParam.substring(1) + "/" +
-          variableParam +
-          "/X/" + document.getElementById("lon_min").value + "/" + document.getElementById("lon_max").value + "/RANGE/" +
-          "Y/" + document.getElementById("lat_min").value + "/" + document.getElementById("lat_max").value + "/RANGE/" +
-          timePart;
       }
       
-      constructedURLInput.value = fullURL;
-      return fullURL;
-    }
-    
-    if (constructURLBtn) {
-      constructURLBtn.addEventListener("click", function() {
-        constructURL();
+      if (constructURLBtn) {
+        constructURLBtn.addEventListener("click", function() {
+          constructURL();
+        });
+      }
+      
+      if (downloadBtn) {
+        downloadBtn.addEventListener("click", function() {
+          const url = constructURL();
+          document.getElementById("spinner").style.display = "inline-block";
+          document.getElementById("spinnerText").style.display = "block";
+          if ('caches' in window) {
+            caches.open('dataCache').then(cache => {
+              cache.match(url).then(cachedResponse => {
+                if (cachedResponse) {
+                  return cachedResponse.blob();
+                } else {
+                  return fetch(url).then(response => {
+                    if (!response.ok) {
+                      throw new Error("Network response was not ok: " + response.statusText);
+                    }
+                    cache.put(url, response.clone());
+                    return response.blob();
+                  });
+                }
+              }).then(blob => {
+                document.getElementById("spinner").style.display = "none";
+                document.getElementById("spinnerText").style.display = "none";
+                let fileName;
+                const datasetSel = document.getElementById("dataset").value;
+                const versionFriendly = document.getElementById("version").value;
+                const frequencyFriendly = document.getElementById("frequency").value;
+                const resolutionFriendly = document.getElementById("resolution").value;
+                const variableFriendly = document.getElementById("variable").value;
+                if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "monthly") {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "dekad") {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && (frequencyFriendly === "daily" || frequencyFriendly === "daily-improved")) {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v3.0" && frequencyFriendly === "monthly") {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${resolutionFriendly}_${variableFriendly}.nc`;
+                }
+                const a = document.createElement("a");
+                const urlBlob = window.URL.createObjectURL(blob);
+                a.href = urlBlob;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(urlBlob);
+              }).catch(error => {
+                document.getElementById("spinner").style.display = "none";
+                document.getElementById("spinnerText").style.display = "none";
+                alert("Download failed: " + error.message);
+                console.error("Download error:", error);
+              });
+            });
+          } else {
+            fetch(url)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok: " + response.statusText);
+                }
+                return response.blob();
+              })
+              .then(blob => {
+                document.getElementById("spinner").style.display = "none";
+                document.getElementById("spinnerText").style.display = "none";
+                let fileName;
+                const datasetSel = document.getElementById("dataset").value;
+                const versionFriendly = document.getElementById("version").value;
+                const frequencyFriendly = document.getElementById("frequency").value;
+                const resolutionFriendly = document.getElementById("resolution").value;
+                const variableFriendly = document.getElementById("variable").value;
+                if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "monthly") {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "dekad") {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && (frequencyFriendly === "daily" || frequencyFriendly === "daily-improved")) {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v3.0" && frequencyFriendly === "monthly") {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
+                } else {
+                  fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${resolutionFriendly}_${variableFriendly}.nc`;
+                }
+                const a = document.createElement("a");
+                const urlBlob = window.URL.createObjectURL(blob);
+                a.href = urlBlob;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(urlBlob);
+              })
+              .catch(error => {
+                document.getElementById("spinner").style.display = "none";
+                document.getElementById("spinnerText").style.display = "none";
+                alert("Download failed: " + error.message);
+                console.error("Download error:", error);
+              });
+          }
+        });
+      }
+      
+      // --- Save Parameters as JSON ---
+      const saveParamsBtn = document.getElementById("saveParamsBtn");
+      function getFormParameters() {
+        return {
+          dataset: document.getElementById("dataset").value,
+          version: document.getElementById("version").value,
+          frequency: document.getElementById("frequency").value,
+          resolution: document.getElementById("resolution").value,
+          variable: document.getElementById("variable").value,
+          start_day: document.getElementById("start_day").value,
+          start_month: document.getElementById("start_month").value,
+          start_year: document.getElementById("start_year").value,
+          end_day: document.getElementById("end_day").value,
+          end_month: document.getElementById("end_month").value,
+          end_year: document.getElementById("end_year").value,
+          lon_min: document.getElementById("lon_min").value,
+          lon_max: document.getElementById("lon_max").value,
+          lat_min: document.getElementById("lat_min").value,
+          lat_max: document.getElementById("lat_max").value
+        };
+      }
+      saveParamsBtn.addEventListener("click", function() {
+        const params = getFormParameters();
+        const jsonStr = JSON.stringify(params, null, 2);
+        const dataUri = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonStr);
+        const a = document.createElement("a");
+        a.href = dataUri;
+        a.download = "parameters.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
       });
-    }
-    
-    // --- URL Download with Caching and Robust Error Handling ---
-    if (downloadBtn) {
-      downloadBtn.addEventListener("click", function() {
-        const url = constructURL();
-        spinner.style.display = "inline-block";
-        spinnerText.style.display = "block";
-        // Use Cache API for caching the response
-        if ('caches' in window) {
-          caches.open('dataCache').then(cache => {
-            cache.match(url).then(cachedResponse => {
-              if (cachedResponse) {
-                return cachedResponse.blob();
-              } else {
-                return fetch(url).then(response => {
-                  if (!response.ok) {
-                    throw new Error("Network response was not ok: " + response.statusText);
-                  }
-                  // Clone response for caching
-                  cache.put(url, response.clone());
-                  return response.blob();
-                });
-              }
-            }).then(blob => {
-              spinner.style.display = "none";
-              spinnerText.style.display = "none";
-              const datasetSel = document.getElementById("dataset").value;
-              const versionFriendly = document.getElementById("version").value;
-              const frequencyFriendly = document.getElementById("frequency").value;
-              const resolutionFriendly = document.getElementById("resolution").value;
-              const variableFriendly = document.getElementById("variable").value;
-              let fileName;
-              if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "monthly") {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "dekad") {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && (frequencyFriendly === "daily" || frequencyFriendly === "daily-improved")) {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else if (datasetSel === "CHIRPS" && versionFriendly === "v3.0" && frequencyFriendly === "monthly") {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${resolutionFriendly}_${variableFriendly}.nc`;
-              }
-              
-              const a = document.createElement("a");
-              const urlBlob = window.URL.createObjectURL(blob);
-              a.href = urlBlob;
-              a.download = fileName;
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-              window.URL.revokeObjectURL(urlBlob);
-            }).catch(error => {
-              spinner.style.display = "none";
-              spinnerText.style.display = "none";
-              alert("Download failed: " + error.message);
-              console.error("Download error:", error);
-            });
-          });
-        } else {
-          // Fallback to regular fetch if Cache API is not supported
-          fetch(url)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("Network response was not ok: " + response.statusText);
-              }
-              return response.blob();
-            })
-            .then(blob => {
-              spinner.style.display = "none";
-              spinnerText.style.display = "none";
-              const datasetSel = document.getElementById("dataset").value;
-              const versionFriendly = document.getElementById("version").value;
-              const frequencyFriendly = document.getElementById("frequency").value;
-              const resolutionFriendly = document.getElementById("resolution").value;
-              const variableFriendly = document.getElementById("variable").value;
-              let fileName;
-              if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "monthly") {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && frequencyFriendly === "dekad") {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && (frequencyFriendly === "daily" || frequencyFriendly === "daily-improved")) {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else if (datasetSel === "CHIRPS" && versionFriendly === "v3.0" && frequencyFriendly === "monthly") {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-              } else {
-                fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${resolutionFriendly}_${variableFriendly}.nc`;
-              }
-              
-              const a = document.createElement("a");
-              const urlBlob = window.URL.createObjectURL(blob);
-              a.href = urlBlob;
-              a.download = fileName;
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-              window.URL.revokeObjectURL(urlBlob);
-            })
-            .catch(error => {
-              spinner.style.display = "none";
-              spinnerText.style.display = "none";
-              alert("Download failed: " + error.message);
-              console.error("Download error:", error);
-            });
+      
+      // --- DATASET SELECTION Logging ---
+      document.getElementById("dataset").addEventListener("change", function () {
+        console.log("Dataset changed to:", this.value);
+        if (this.value === "CHIRPS") {
+          console.log("CHIRPS selected. Saving parameters: Source = .UCSB, Dataset = .CHIRPS");
         }
       });
-    }
-    
-    // --- Save Parameters as JSON ---
-    const saveParamsBtn = document.getElementById("saveParamsBtn");
-    function getFormParameters() {
-      return {
-        dataset: document.getElementById("dataset").value,
-        version: document.getElementById("version").value,
-        frequency: document.getElementById("frequency").value,
-        resolution: document.getElementById("resolution").value,
-        variable: document.getElementById("variable").value,
-        start_day: document.getElementById("start_day").value,
-        start_month: document.getElementById("start_month").value,
-        start_year: document.getElementById("start_year").value,
-        end_day: document.getElementById("end_day").value,
-        end_month: document.getElementById("end_month").value,
-        end_year: document.getElementById("end_year").value,
-        lon_min: document.getElementById("lon_min").value,
-        lon_max: document.getElementById("lon_max").value,
-        lat_min: document.getElementById("lat_min").value,
-        lat_max: document.getElementById("lat_max").value
-      };
-    }
-    saveParamsBtn.addEventListener("click", function() {
-      const params = getFormParameters();
-      const jsonStr = JSON.stringify(params, null, 2);
-      const dataUri = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonStr);
-      const a = document.createElement("a");
-      a.href = dataUri;
-      a.download = "parameters.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    });
-    
-    // --- DATASET SELECTION Logging ---
-    document.getElementById("dataset").addEventListener("change", function () {
-      console.log("Dataset changed to:", this.value);
-      if (this.value === "CHIRPS") {
-        console.log("CHIRPS selected. Saving parameters: Source = .UCSB, Dataset = .CHIRPS");
+      let ds = document.getElementById("dataset").value;
+      if (ds === "CHIRPS") {
+        console.log("CHIRPS selected on load. Saving parameters: Source = .UCSB, Dataset = .CHIRPS");
       }
-    });
-    let ds = document.getElementById("dataset").value;
-    if (ds === "CHIRPS") {
-      console.log("CHIRPS selected on load. Saving parameters: Source = .UCSB, Dataset = .CHIRPS");
-    }
-    
-    // --- SPATIAL MAP DISPLAY (Red Rectangular Box) ---
-    let spatialMap;
-    let spatialRectangle;
-    function initSpatialMap() {
-      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' });
-      const cartoPositron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO' });
-      const cartoDarkMatter = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO' });
-      const esriWorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
-      const esriWorldTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
       
-      spatialMap = L.map("spatial_map", {
-        center: [0, 0],
-        zoom: 2,
-        layers: [osm]
+      // --- SPATIAL MAP DISPLAY (Red Rectangular Box) ---
+      let spatialMap;
+      let spatialRectangle;
+      function initSpatialMap() {
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' });
+        const cartoPositron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO' });
+        const cartoDarkMatter = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO' });
+        const esriWorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
+        const esriWorldTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
+        
+        spatialMap = L.map("spatial_map", {
+          center: [0, 0],
+          zoom: 2,
+          layers: [osm]
+        });
+        L.control.layers({
+          "OpenStreetMap": osm,
+          "Carto Positron": cartoPositron,
+          "Carto Dark Matter": cartoDarkMatter,
+          "ESRI World Imagery": esriWorldImagery,
+          "ESRI World Topo": esriWorldTopo
+        }).addTo(spatialMap);
+      }
+      
+      document.getElementById("showSpatialBtn").addEventListener("click", function () {
+        if (!spatialMap) { initSpatialMap(); }
+        let lonMin = parseFloat(document.getElementById("lon_min").value);
+        let lonMax = parseFloat(document.getElementById("lon_max").value);
+        let latMin = parseFloat(document.getElementById("lat_min").value);
+        let latMax = parseFloat(document.getElementById("lat_max").value);
+        
+        if (isNaN(lonMin) || isNaN(lonMax) || isNaN(latMin) || isNaN(latMax)) {
+          alert("Please enter valid spatial values.");
+          return;
+        }
+        
+        const bounds = [[latMin, lonMin], [latMax, lonMax]];
+        console.log("Showing rectangle with bounds:", bounds);
+        if (spatialRectangle) {
+          spatialMap.removeLayer(spatialRectangle);
+        }
+        spatialRectangle = L.rectangle(bounds, { color: "red", weight: 2 });
+        spatialRectangle.addTo(spatialMap).bringToFront();
+        spatialMap.fitBounds(bounds);
       });
-      L.control.layers({
-        "OpenStreetMap": osm,
-        "Carto Positron": cartoPositron,
-        "Carto Dark Matter": cartoDarkMatter,
-        "ESRI World Imagery": esriWorldImagery,
-        "ESRI World Topo": esriWorldTopo
-      }).addTo(spatialMap);
-    }
-    
-    document.getElementById("showSpatialBtn").addEventListener("click", function () {
-      if (!spatialMap) { initSpatialMap(); }
-      let lonMin = parseFloat(document.getElementById("lon_min").value);
-      let lonMax = parseFloat(document.getElementById("lon_max").value);
-      let latMin = parseFloat(document.getElementById("lat_min").value);
-      let latMax = parseFloat(document.getElementById("lat_max").value);
-      
-      if (isNaN(lonMin) || isNaN(lonMax) || isNaN(latMin) || isNaN(latMax)) {
-        alert("Please enter valid spatial values.");
-        return;
-      }
-      
-      const bounds = [[latMin, lonMin], [latMax, lonMax]];
-      console.log("Showing rectangle with bounds:", bounds);
-      if (spatialRectangle) {
-        spatialMap.removeLayer(spatialRectangle);
-      }
-      spatialRectangle = L.rectangle(bounds, { color: "red", weight: 2 });
-      spatialRectangle.addTo(spatialMap).bringToFront();
-      spatialMap.fitBounds(bounds);
     });
   </script>
   
