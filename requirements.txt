@@ -1,12 +1,16 @@
 attrs==25.3.0
 blinker==1.9.0
 cachetools==5.5.2
+cdsapi==0.7.5
 certifi==2025.1.31
 charset-normalizer==3.4.1
 click==8.1.8
 colorama==0.4.6
 datapi==0.3.0
+earthengine-api==1.5.9
 Flask==3.1.0
+geopandas==1.0.1
+gunicorn==23.0.0
 httplib2==0.22.0
 idna==3.10
 iniconfig==2.1.0
