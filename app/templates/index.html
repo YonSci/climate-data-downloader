@@ -10,7 +10,7 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <style>
-    body { padding-top: 80px; }
+    body { padding-top: 60px; }
     .skip-link {
       position: absolute;
       top: -40px;
@@ -40,6 +40,14 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top" role="navigation" aria-label="Main Navigation">
     <div class="container">
       <a class="navbar-brand" href="#">Climate Data Downloader</a>
+      <div class="d-flex">
+        <!-- Help Menu Item with extra spacing -->
+        <a href="#" class="nav-link text-white me-3" data-bs-toggle="modal" data-bs-target="#helpModal">Help</a>
+        <!-- FAQ Menu Item -->
+        <a href="#" class="nav-link text-white me-3" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+        <!-- Features Menu Item -->
+        <a href="#" class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#featuresModal">Features</a>
+      </div>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
               aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -81,7 +89,7 @@
         <div class="card-header">Data Parameters</div>
         <div class="card-body">
           <div class="row">
-            <!-- Dataset -->
+            <!-- Dataset Dropdown -->
             <div class="col-md-4 mb-3">
               <label for="dataset" class="form-label" data-bs-toggle="tooltip" title="Choose the dataset source (CHIRPS, CPC, TAMSAT, ARC, or GPCP)">Dataset:</label>
               <select id="dataset" name="dataset" class="form-select">
@@ -92,38 +100,30 @@
                 <option value="GPCP">GPCP</option>
               </select>
             </div>
-            <!-- Version (updated dynamically) -->
+            <!-- Version Dropdown (populated dynamically) -->
             <div class="col-md-4 mb-3">
               <label for="version" class="form-label" data-bs-toggle="tooltip" title="For CHIRPS: choose between v2.0 and v3.0; for CPC: fixed to v1p0; for TAMSAT: fixed to v3p1; for ARC: fixed to ARC2; for GPCP: fixed to V2p3.">Version:</label>
-              <select id="version" name="version" class="form-select">
-                <!-- Options set dynamically -->
-              </select>
+              <select id="version" name="version" class="form-select"></select>
             </div>
-            <!-- Frequency (updated dynamically) -->
+            <!-- Frequency Dropdown (populated dynamically) -->
             <div class="col-md-4 mb-3">
               <label for="frequency" class="form-label" data-bs-toggle="tooltip" title="For CHIRPS: daily, daily‑improved, dekad, or monthly; for CPC: daily or monthly; for TAMSAT: daily, dekadal, or monthly; for ARC: daily or monthly; for GPCP: fixed to monthly.">Frequency:</label>
-              <select id="frequency" name="frequency" class="form-select">
-                <!-- Options set dynamically -->
-              </select>
+              <select id="frequency" name="frequency" class="form-select"></select>
             </div>
           </div>
           <div class="row">
-            <!-- Resolution (updated dynamically) -->
+            <!-- Resolution Dropdown (populated dynamically) -->
             <div class="col-md-4 mb-3">
-              <label for="resolution" class="form-label" data-bs-toggle="tooltip" title="For CHIRPS: 0.05 or 0.25; for CPC: 0.5; for TAMSAT: 0.0375; for ARC: 0.1; for GPCP: fixed to 2.5.">Resolution:</label>
-              <select id="resolution" name="resolution" class="form-select">
-                <!-- Options set dynamically -->
-              </select>
+              <label for="resolution" class="form-label" data-bs-toggle="tooltip" title="For CHIRPS: 0.05 or 0.25 (but for monthly frequency only 0.05 is allowed); for CPC: 0.5; for TAMSAT: 0.0375; for ARC: 0.1; for GPCP: 2.5.">Resolution:</label>
+              <select id="resolution" name="resolution" class="form-select"></select>
             </div>
-            <!-- Variable (updated dynamically) -->
+            <!-- Variable Dropdown (populated dynamically) -->
             <div class="col-md-4 mb-3">
               <label for="variable" class="form-label" data-bs-toggle="tooltip" title="For CPC:  
               - Daily: Precipitation, Maximum Temperature, Minimum Temperature  
               - Monthly: Precipitation, Maximum Temperature, Minimum Temperature, Mean Temperature  
-              For CHIRPS, TAMSAT, ARC, and GPCP, fixed to precipitation.">Variable:</label>
-              <select id="variable" name="variable" class="form-select">
-                <!-- Options set dynamically -->
-              </select>
+              For CHIRPS, TAMSAT, ARC, and GPCP, fixed to precipitation (for monthly CHIRPS, variable is .precipitation).">Variable:</label>
+              <select id="variable" name="variable" class="form-select"></select>
             </div>
           </div>
         </div>
@@ -144,7 +144,7 @@
               <select id="start_month" name="start_month" class="form-select"></select>
             </div>
             <div class="col-md-4 mb-3">
-              <label for="start_year" class="form-label" data-bs-toggle="tooltip" title="For CPC and GPCP: start year begins at 1979; for CHIRPS: 1981; for TAMSAT and ARC: 1983">Year:</label>
+              <label for="start_year" class="form-label" data-bs-toggle="tooltip" title="For CPC & GPCP: start year begins at 1979; for CHIRPS: 1981; for TAMSAT & ARC: 1983">Year:</label>
               <select id="start_year" name="start_year" class="form-select"></select>
             </div>
           </div>
@@ -212,15 +212,10 @@
       </div>
     </div>
     
-    <!-- URL Construction Card -->
+    <!-- Download Card -->
     <div class="card mb-4" id="urlCard" style="display: none;">
-      <div class="card-header">Construct URL & Download</div>
+      <div class="card-header">Download NetCDF</div>
       <div class="card-body">
-        <button type="button" class="btn btn-info mb-3 w-100" id="constructURLBtn">Construct URL</button>
-        <div class="mb-3">
-          <label for="constructedURL" class="form-label">Constructed URL:</label>
-          <input type="text" id="constructedURL" class="form-control" readonly>
-        </div>
         <div id="spinner" class="spinner-border text-primary" role="status" style="display:none;">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -237,59 +232,188 @@
       </div>
     </div>
     
-    <!-- FAQ Section -->
-    <div class="accordion mb-4" id="faqAccordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-            FAQ: What do the filters mean?
-          </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
-          <div class="accordion-body">
-            <ul>
-              <li><strong>Dataset:</strong> Choose between CHIRPS, CPC, TAMSAT, ARC, and GPCP data sources.</li>
-              <li><strong>Version:</strong>  
-                - CHIRPS: choose between v2.0 and v3.0  
-                - CPC: fixed to v1p0  
-                - TAMSAT: fixed to v3p1  
-                - ARC: fixed to ARC2  
-                - GPCP: fixed to V2p3  
-              </li>
-              <li><strong>Frequency:</strong>  
-                - CHIRPS: daily, daily‑improved, dekad, or monthly  
-                - CPC: daily or monthly  
-                - TAMSAT: daily, dekadal, or monthly  
-                - ARC: daily or monthly  
-                - GPCP: fixed to monthly  
-              </li>
-              <li><strong>Resolution:</strong>  
-                - CHIRPS: 0.05 or 0.25  
-                - CPC: 0.5  
-                - TAMSAT: 0.0375  
-                - ARC: 0.1  
-                - GPCP: 2.5  
-              </li>
-              <li><strong>Variable:</strong>  
-                - CPC:  
-                  • Daily: Precipitation, Maximum Temperature, Minimum Temperature  
-                  • Monthly: Precipitation, Maximum Temperature, Minimum Temperature, Mean Temperature  
-                - CHIRPS, TAMSAT, ARC, GPCP: fixed to precipitation  
-              </li>
-              <li><strong>Temporal Filtering:</strong>  
-                - CPC & GPCP: start year begins at 1979  
-                - CHIRPS: start year begins at 1981  
-                - TAMSAT & ARC: start year begins at 1983  
-                The end date is taken from user input.  
-              </li>
-              <li><strong>Spatial Filtering:</strong> Define the geographic area using latitude and longitude.</li>
-            </ul>
-          </div>
+  </main>
+  
+  <!-- Help Modal -->
+  <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="helpModalLabel">How to Use This Application</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h3>Overview</h3>
+          <p>This tool allows you to download climate and geo‑spatial data from various sources including CHIRPS, CPC, TAMSAT, ARC, and GPCP. You can customize your download by selecting dataset parameters, temporal and spatial filters, review your settings, and download the corresponding NetCDF file.</p>
+          <h4>Step-by-Step Guide</h4>
+          <ol>
+            <li>
+              <strong>Input Method:</strong>
+              <ul>
+                <li>Fill out the form manually or upload a saved JSON file to pre‑populate the fields.</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Data Parameters:</strong>
+              <ul>
+                <li>Select your <em>Dataset</em> (CHIRPS, CPC, TAMSAT, ARC, or GPCP).</li>
+                <li>The <em>Version</em>, <em>Frequency</em>, and <em>Resolution</em> fields update automatically based on the selected dataset.
+                  <ul>
+                    <li>For CHIRPS: If version <em>v3.0</em> or <em>v2.0</em> is selected and frequency is monthly, only <em>monthly</em> is allowed, the resolution is fixed to <em>0.05</em> (and omitted from the URL), and the variable is set to <em>.precipitation</em>.</li>
+                  </ul>
+                </li>
+                <li>For CPC, additional temperature options appear in the <em>Variable</em> dropdown based on frequency.</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Temporal Filtering:</strong>
+              <ul>
+                <li>Select the <em>Start Date</em> (day, month, and year) and <em>End Date</em> from the dropdowns. Note that available start years differ by dataset:
+                  <ul>
+                    <li>CPC & GPCP: begin at <strong>1979</strong></li>
+                    <li>CHIRPS: begin at <strong>1981</strong></li>
+                    <li>TAMSAT & ARC: begin at <strong>1983</strong></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>Spatial Filtering:</strong>
+              <ul>
+                <li>Enter the minimum and maximum longitude and latitude values for your area of interest.</li>
+                <li>Click the <em>Show Spatial Selection on Map</em> button to visualize your selected bounding box.</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Review & Confirm:</strong>
+              <ul>
+                <li>Click <em>Review Selections</em> to view a summary of your parameters.</li>
+                <li>If any changes are needed, click <em>Go Back</em> to edit your selections.</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Download NetCDF:</strong>
+              <ul>
+                <li>Once you confirm your selections, click <em>Download NetCDF</em>. The application will internally construct the download URL and fetch your data file. A spinner will indicate that the download is in progress.</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Save/Load Parameters:</strong>
+              <ul>
+                <li>You can download your current parameters as a JSON file using a file name in the format <code>Dataset_Version_Frequency_Resolution_Variable.json</code>.</li>
+              </ul>
+            </li>
+          </ol>
+          <p>Once you verify and debug all the links and the code, you can remove or comment out any URL debug display if desired.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
-    
-  </main>
+  </div>
+  
+  <!-- FAQ Modal -->
+  <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="faqModalLabel">FAQ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            <li><strong>Dataset:</strong> Choose between CHIRPS, CPC, TAMSAT, ARC, and GPCP data sources.</li>
+            <li><strong>Version:</strong>
+              <ul>
+                <li>CHIRPS: choose between v2.0 and v3.0</li>
+                <li>CPC: fixed to v1p0</li>
+                <li>TAMSAT: fixed to v3p1</li>
+                <li>ARC: fixed to ARC2</li>
+                <li>GPCP: fixed to V2p3</li>
+              </ul>
+            </li>
+            <li><strong>Frequency:</strong>
+              <ul>
+                <li>CHIRPS: daily, daily‑improved, dekad, or monthly</li>
+                <li>CPC: daily or monthly</li>
+                <li>TAMSAT: daily, dekadal, or monthly</li>
+                <li>ARC: daily or monthly</li>
+                <li>GPCP: fixed to monthly</li>
+              </ul>
+            </li>
+            <li><strong>Resolution:</strong>
+              <ul>
+                <li>CHIRPS: For monthly frequency (both v2.0 and v3.0) only 0.05 is allowed (the resolution parameter is omitted from the URL)</li>
+                <li>CPC: 0.5</li>
+                <li>TAMSAT: 0.0375</li>
+                <li>ARC: 0.1</li>
+                <li>GPCP: 2.5</li>
+              </ul>
+            </li>
+            <li><strong>Variable:</strong>
+              <ul>
+                <li>CPC:
+                  <ul>
+                    <li>Daily: Precipitation, Maximum Temperature, Minimum Temperature</li>
+                    <li>Monthly: Precipitation, Maximum Temperature, Minimum Temperature, Mean Temperature</li>
+                  </ul>
+                </li>
+                <li>CHIRPS, TAMSAT, ARC, GPCP: fixed to precipitation (for monthly CHIRPS, variable is set to <em>.precipitation</em>)</li>
+              </ul>
+            </li>
+            <li><strong>Temporal Filtering:</strong>
+              <ul>
+                <li>CPC & GPCP: start year begins at 1979</li>
+                <li>CHIRPS: start year begins at 1981</li>
+                <li>TAMSAT & ARC: start year begins at 1983</li>
+                <li>The end date is taken from user input.</li>
+              </ul>
+            </li>
+            <li><strong>Spatial Filtering:</strong> Define the geographic area using latitude and longitude.</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Features Modal -->
+  <div class="modal fade" id="featuresModal" tabindex="-1" aria-labelledby="featuresModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="featuresModalLabel">Application Features & Tech Stack</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h4>Key Features</h4>
+          <ul>
+            <li><strong>Responsive and Modern UI:</strong> Built using Bootstrap 5 with the Flatly theme for a clean, mobile-friendly design.</li>
+            <li><strong>Dynamic Form Inputs:</strong> The form automatically updates options based on dataset selection, version, frequency, and resolution.</li>
+            <li><strong>Interactive Mapping:</strong> Integration with Leaflet for spatial selection visualization.</li>
+            <li><strong>Robust Download Handling:</strong> Internally constructs download URLs, uses caching, and shows a spinner during downloads.</li>
+            <li><strong>Save/Load Parameters:</strong> Users can save their selections as JSON for later reuse.</li>
+          </ul>
+          <h4>Tech Stack</h4>
+          <ul>
+            <li><strong>HTML5 & CSS3:</strong> Structure and styling of the application.</li>
+            <li><strong>Bootstrap 5:</strong> Responsive layout and UI components.</li>
+            <li><strong>Bootswatch Flatly Theme:</strong> Custom, modern design for enhanced user experience.</li>
+            <li><strong>JavaScript:</strong> Dynamic form handling, URL construction, and file download logic.</li>
+            <li><strong>Leaflet:</strong> Interactive mapping and spatial data visualization.</li>
+            <li><strong>shp.js:</strong> (Optional) For shapefile processing if needed.</li>
+          </ul>
+          <p>This application is designed to be modular and scalable, allowing for future enhancements and integration with additional data sources and visualization tools.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <!-- Bootstrap 5 JS Bundle (includes Popper) and Leaflet JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -311,6 +435,49 @@
       fillFormRadio.addEventListener("change", toggleInputMethod);
       uploadJSONRadio.addEventListener("change", toggleInputMethod);
       toggleInputMethod();
+
+      // --- JSON File Load & Clear Functionality ---
+      loadJSONBtn.addEventListener("click", function() {
+        const file = document.getElementById("uploadJSON").files[0];
+        if (!file) {
+          alert("Please select a JSON file.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const params = JSON.parse(e.target.result);
+            document.getElementById("dataset").value = params.dataset || "";
+            document.getElementById("version").value = params.version || "";
+            document.getElementById("frequency").value = params.frequency || "";
+            document.getElementById("resolution").value = params.resolution || "";
+            document.getElementById("variable").value = params.variable || "";
+            document.getElementById("start_day").value = params.start_day || "";
+            document.getElementById("start_month").value = params.start_month || "";
+            document.getElementById("start_year").value = params.start_year || "";
+            document.getElementById("end_day").value = params.end_day || "";
+            document.getElementById("end_month").value = params.end_month || "";
+            document.getElementById("end_year").value = params.end_year || "";
+            document.getElementById("lon_min").value = params.lon_min || "";
+            document.getElementById("lon_max").value = params.lon_max || "";
+            document.getElementById("lat_min").value = params.lat_min || "";
+            document.getElementById("lat_max").value = params.lat_max || "";
+            alert("Parameters loaded successfully.");
+            updateDatasetDependentOptions();
+          } catch (err) {
+            alert("Error loading JSON file.");
+            console.error(err);
+          }
+        };
+        reader.readAsText(file);
+      });
+      
+      clearJSONBtn.addEventListener("click", function() {
+        document.getElementById("uploadJSON").value = "";
+        fillFormRadio.checked = true;
+        toggleInputMethod();
+        alert("JSON input cleared. You can now fill out the form.");
+      });
 
       // --- Update Version Options based on Dataset ---
       function updateVersionOptions() {
@@ -341,7 +508,7 @@
           opt.text = "V2p3";
           versionSelect.appendChild(opt);
           versionSelect.disabled = true;
-        } else {
+        } else { // CHIRPS
           let opt1 = document.createElement("option");
           opt1.value = "v2.0";
           opt1.text = "v2.0";
@@ -354,7 +521,7 @@
         }
       }
       
-      // --- Update Frequency Options based on Dataset ---
+      // --- Update Frequency Options based on Dataset and (for CHIRPS) Version ---
       function updateFrequencyOptions() {
         const dataset = document.getElementById("dataset").value;
         const frequencySelect = document.getElementById("frequency");
@@ -393,19 +560,28 @@
           opt.text = "monthly";
           frequencySelect.appendChild(opt);
           frequencySelect.disabled = true;
-        } else {
-          frequencySelect.disabled = false;
-          const options = ["daily", "daily-improved", "dekad", "monthly"];
-          options.forEach(optText => {
+        } else { // CHIRPS
+          const versionVal = document.getElementById("version").value;
+          if (versionVal === "v3.0") {
             let opt = document.createElement("option");
-            opt.value = optText;
-            opt.text = optText;
+            opt.value = "monthly";
+            opt.text = "monthly";
             frequencySelect.appendChild(opt);
-          });
+            frequencySelect.disabled = true;
+          } else {
+            const options = ["daily", "daily-improved", "dekad", "monthly"];
+            options.forEach(optText => {
+              let opt = document.createElement("option");
+              opt.value = optText;
+              opt.text = optText;
+              frequencySelect.appendChild(opt);
+            });
+            frequencySelect.disabled = false;
+          }
         }
       }
       
-      // --- Update Resolution Options based on Dataset ---
+      // --- Update Resolution Options based on Dataset and (for CHIRPS) Version & Frequency ---
       function updateResolutionOptions() {
         const dataset = document.getElementById("dataset").value;
         const resolutionSelect = document.getElementById("resolution");
@@ -434,15 +610,25 @@
           opt.text = "2.5";
           resolutionSelect.appendChild(opt);
           resolutionSelect.disabled = true;
-        } else {
-          resolutionSelect.disabled = false;
-          const options = ["0.05", "0.25"];
-          options.forEach(optText => {
+        } else { // CHIRPS
+          const frequency = document.getElementById("frequency").value;
+          if (frequency === "monthly") {
+            resolutionSelect.innerHTML = "";
             let opt = document.createElement("option");
-            opt.value = optText;
-            opt.text = optText;
+            opt.value = "0.05";
+            opt.text = "0.05";
             resolutionSelect.appendChild(opt);
-          });
+            resolutionSelect.disabled = true;
+          } else {
+            const options = ["0.05", "0.25"];
+            options.forEach(optText => {
+              let opt = document.createElement("option");
+              opt.value = optText;
+              opt.text = optText;
+              resolutionSelect.appendChild(opt);
+            });
+            resolutionSelect.disabled = false;
+          }
         }
       }
       
@@ -453,12 +639,10 @@
         const variableField = document.getElementById("variable");
         variableField.innerHTML = "";
         if (dataset === "CPC") {
-          // Always include precipitation option first.
           let optPrecip = document.createElement("option");
           optPrecip.value = "precipitation";
           optPrecip.text = "Precipitation";
           variableField.appendChild(optPrecip);
-          // Then add temperature options based on frequency.
           if (frequency === "daily") {
             let optMax = document.createElement("option");
             optMax.value = "max_temp";
@@ -484,10 +668,14 @@
           }
           variableField.disabled = false;
         } else if (dataset === "TAMSAT" || dataset === "CHIRPS" || dataset === "ARC" || dataset === "GPCP") {
-          // For TAMSAT, CHIRPS, ARC, and GPCP, variable is fixed to precipitation.
           let opt = document.createElement("option");
-          opt.value = "precipitation";
-          opt.text = "precipitation";
+          if (dataset === "CHIRPS" && frequency === "monthly") {
+            opt.value = "precipitation";
+            opt.text = "precipitation";
+          } else {
+            opt.value = "precipitation";
+            opt.text = "precipitation";
+          }
           variableField.appendChild(opt);
           variableField.disabled = true;
         }
@@ -496,7 +684,6 @@
       // --- Update Temporal Filtering Dropdowns based on Dataset ---
       function populateTemporalFilters() {
         const dataset = document.getElementById("dataset").value;
-        // Set start year based on dataset.
         let startYearValue;
         if (dataset === "CPC" || dataset === "GPCP") {
           startYearValue = 1979;
@@ -572,7 +759,14 @@
       
       updateDatasetDependentOptions();
       document.getElementById("dataset").addEventListener("change", updateDatasetDependentOptions);
-      document.getElementById("frequency").addEventListener("change", updateVariableOptions);
+      document.getElementById("frequency").addEventListener("change", function(){
+        updateVariableOptions();
+        updateResolutionOptions();
+      });
+      document.getElementById("version").addEventListener("change", function() {
+        updateFrequencyOptions();
+        updateResolutionOptions();
+      });
       
       // --- REVIEW & CONFIRM LOGIC ---
       const reviewBtn = document.getElementById("reviewSelections");
@@ -617,6 +811,7 @@
         `;
         selectionP.innerHTML = summary;
         confirmCard.style.display = "block";
+        // Show the download card which now only contains the Download NetCDF button
         document.getElementById("urlCard").style.display = "block";
       });
       
@@ -625,9 +820,7 @@
         reviewBtn.style.display = "block";
       });
       
-      // --- URL CONSTRUCTION & DOWNLOAD with Caching and Robust Error Handling ---
-      const constructURLBtn = document.getElementById("constructURLBtn");
-      const constructedURLInput = document.getElementById("constructedURL");
+      // --- URL CONSTRUCTION & DOWNLOAD ---
       const downloadBtn = document.getElementById("downloadBtn");
       
       function constructURL() {
@@ -671,13 +864,11 @@
             cpcSegment = ".UNIFIED_PRCP/.GAUGE_BASED/.GLOBAL/.v1p0/.REALTIME/.rain";
           }
           
-          const fullURL = "https://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/" + cpcSegment +
-                          "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
-                          "Y/" + latMin + "/" + latMax + "/RANGE/" +
-                          "T/(" + start_day + "%20" + start_month + "%20" + start_year + ")/(" +
-                          end_day + "%20" + end_month + "%20" + end_year + ")/RANGE/data.nc";
-          constructedURLInput.value = fullURL;
-          return fullURL;
+          return "https://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/" + cpcSegment +
+                 "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
+                 "Y/" + latMin + "/" + latMax + "/RANGE/" +
+                 "T/(" + start_day + "%20" + start_month + "%20" + start_year + ")/(" +
+                 end_day + "%20" + end_month + "%20" + end_year + ")/RANGE/data.nc";
         }
         
         // TAMSAT branch
@@ -706,9 +897,7 @@
             timeSegment = "T/(" + start_month + "%20" + start_year + ")/(" +
                           end_month + "%20" + end_year + ")/RANGE/data.nc";
           }
-          const fullURL = fixedBase + "/" + frequencySegment + rfeSegment + spatialSegment + timeSegment;
-          constructedURLInput.value = fullURL;
-          return fullURL;
+          return fixedBase + "/" + frequencySegment + rfeSegment + spatialSegment + timeSegment;
         }
         
         // ARC branch
@@ -725,30 +914,24 @@
             timeSegment = "T/(" + start_month + "%20" + start_year + ")/(" +
                           end_month + "%20" + end_year + ")/RANGE/data.nc";
           }
-          const fullURL = "https://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/.FEWS/.Africa/.DAILY/.ARC2" +
-                          "/" + frequencySegment +
-                          "/.est_prcp" +
-                          "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
-                          "Y/" + latMin + "/" + latMax + "/RANGE/" +
-                          timeSegment;
-          constructedURLInput.value = fullURL;
-          return fullURL;
+          return "https://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/.FEWS/.Africa/.DAILY/.ARC2" +
+                 "/" + frequencySegment +
+                 "/.est_prcp" +
+                 "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
+                 "Y/" + latMin + "/" + latMax + "/RANGE/" +
+                 timeSegment;
         }
         
         // GPCP branch
         if (datasetSel === "GPCP") {
-          // For GPCP, settings are fixed: Version = V2p3, Frequency = monthly, Resolution = 2.5, Variable = precipitation
-          // Temporal filtering: use month and year only.
-          const fullURL = "https://iridl.ldeo.columbia.edu/SOURCES/.NASA/.GPCP/.V2p3/.CDR-NCEI/.full/.precip" +
-                          "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
-                          "Y/" + latMin + "/" + latMax + "/RANGE/" +
-                          "T/(" + start_month + "%20" + start_year + ")/(" +
-                          end_month + "%20" + end_year + ")/RANGE/data.nc";
-          constructedURLInput.value = fullURL;
-          return fullURL;
+          return "https://iridl.ldeo.columbia.edu/SOURCES/.NASA/.GPCP/.V2p3/.CDR-NCEI/.full/.precip" +
+                 "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
+                 "Y/" + latMin + "/" + latMax + "/RANGE/" +
+                 "T/(" + start_month + "%20" + start_year + ")/(" +
+                 end_month + "%20" + end_year + ")/RANGE/data.nc";
         }
         
-        // CHIRPS branch (unchanged)
+        // CHIRPS branch
         let sourceParam = ".UCSB";
         let datasetParam = ".CHIRPS";
         let versionVal = document.getElementById("version").value;
@@ -761,41 +944,46 @@
           case "dekad": frequencyParam = ".dekad"; break;
           case "monthly": frequencyParam = ".monthly"; break;
         }
-        
         let scopeParam = "";
         if (frequencyVal !== "dekad") {
           scopeParam = ".global";
         }
-        
         let timePart = "T/" + start_day + "%20" + start_month + "%20" + start_year + "/" +
                        end_day + "%20" + end_month + "%20" + end_year + "/RANGE/data.nc";
+        let variableParam = ".prcp"; // default for CHIRPS
         
-        let variableParam = ".prcp"; // fixed for CHIRPS.
-        
-        let fullURL = baseURL +
-                      sourceParam + "/" +
-                      datasetParam + "/" +
-                      versionParam + "/" +
-                      frequencyParam + "/" +
-                      scopeParam + "/" +
-                      (document.getElementById("resolution").value === "0.05" ? ".0p05" : ".0p25") + "/" +
-                      variableParam +
-                      "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
-                      "Y/" + latMin + "/" + latMax + "/RANGE/" +
-                      timePart;
-        constructedURLInput.value = fullURL;
-        return fullURL;
-      }
-      
-      if (constructURLBtn) {
-        constructURLBtn.addEventListener("click", function() {
-          constructURL();
-        });
+        // For CHIRPS monthly, remove the resolution segment and use .precipitation
+        if (frequencyVal === "monthly") {
+          variableParam = ".precipitation";
+          return baseURL +
+                 sourceParam + "/" +
+                 datasetParam + "/" +
+                 versionParam + "/" +
+                 frequencyParam + "/" +
+                 scopeParam + "/" +
+                 variableParam +
+                 "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
+                 "Y/" + latMin + "/" + latMax + "/RANGE/" +
+                 timePart;
+        } else {
+          return baseURL +
+                 sourceParam + "/" +
+                 datasetParam + "/" +
+                 versionParam + "/" +
+                 frequencyParam + "/" +
+                 scopeParam + "/" +
+                 (document.getElementById("resolution").value === "0.05" ? ".0p05" : ".0p25") + "/" +
+                 variableParam +
+                 "/X/" + lonMin + "/" + lonMax + "/RANGE/" +
+                 "Y/" + latMin + "/" + latMax + "/RANGE/" +
+                 timePart;
+        }
       }
       
       if (downloadBtn) {
         downloadBtn.addEventListener("click", function() {
           const url = constructURL();
+          console.log("Constructed URL (for debugging):", url);
           document.getElementById("spinner").style.display = "inline-block";
           document.getElementById("spinnerText").style.display = "block";
           if ('caches' in window) {
@@ -827,7 +1015,7 @@
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
                 } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && (frequencyFriendly === "daily" || frequencyFriendly === "daily-improved")) {
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-                } else if (datasetSel === "CHIRPS" && versionFriendly === "v3.0" && frequencyFriendly === "monthly") {
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v3p0" && frequencyFriendly === "monthly") {
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
                 } else if (datasetSel === "GPCP") {
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
@@ -872,7 +1060,7 @@
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
                 } else if (datasetSel === "CHIRPS" && versionFriendly === "v2.0" && (frequencyFriendly === "daily" || frequencyFriendly === "daily-improved")) {
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
-                } else if (datasetSel === "CHIRPS" && versionFriendly === "v3.0" && frequencyFriendly === "monthly") {
+                } else if (datasetSel === "CHIRPS" && versionFriendly === "v3p0" && frequencyFriendly === "monthly") {
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
                 } else if (datasetSel === "GPCP") {
                   fileName = `${datasetSel}_${versionFriendly}_${frequencyFriendly}_${variableFriendly}.nc`;
@@ -898,7 +1086,7 @@
         });
       }
       
-      // --- Save Parameters as JSON ---
+      // --- Save Parameters as JSON with dynamic file name ---
       const saveParamsBtn = document.getElementById("saveParamsBtn");
       function getFormParameters() {
         return {
@@ -923,9 +1111,15 @@
         const params = getFormParameters();
         const jsonStr = JSON.stringify(params, null, 2);
         const dataUri = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonStr);
+        const datasetName = document.getElementById("dataset").value;
+        const versionName = document.getElementById("version").value;
+        const frequencyName = document.getElementById("frequency").value;
+        const resolutionName = document.getElementById("resolution").value;
+        const variableName = document.getElementById("variable").value;
+        const fileName = `${datasetName}_${versionName}_${frequencyName}_${resolutionName}_${variableName}.json`;
         const a = document.createElement("a");
         a.href = dataUri;
-        a.download = "parameters.json";
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         a.remove();
