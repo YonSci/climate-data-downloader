@@ -10,7 +10,7 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <style>
-    body { padding-top: 60px; }
+    body { padding-top: 120px; }
     .skip-link {
       position: absolute;
       top: -40px;
@@ -46,7 +46,9 @@
         <!-- FAQ Menu Item -->
         <a href="#" class="nav-link text-white me-3" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
         <!-- Features Menu Item -->
-        <a href="#" class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#featuresModal">Features</a>
+        <a href="#" class="nav-link text-white me-3" data-bs-toggle="modal" data-bs-target="#featuresModal">Features</a>
+        <!-- Tech Stack Menu Item -->
+        <a href="#" class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#techStackModal">Tech Stack</a>
       </div>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
               aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -122,7 +124,7 @@
               <label for="variable" class="form-label" data-bs-toggle="tooltip" title="For CPC:  
               - Daily: Precipitation, Maximum Temperature, Minimum Temperature  
               - Monthly: Precipitation, Maximum Temperature, Minimum Temperature, Mean Temperature  
-              For CHIRPS, TAMSAT, ARC, and GPCP, fixed to precipitation (for monthly CHIRPS, variable is .precipitation).">Variable:</label>
+              For CHIRPS, TAMSAT, ARC, and GPCP, fixed to precipitation (for monthly CHIRPS, variable is set to <em>.precipitation</em>).">Variable:</label>
               <select id="variable" name="variable" class="form-select"></select>
             </div>
           </div>
@@ -144,7 +146,7 @@
               <select id="start_month" name="start_month" class="form-select"></select>
             </div>
             <div class="col-md-4 mb-3">
-              <label for="start_year" class="form-label" data-bs-toggle="tooltip" title="For CPC & GPCP: start year begins at 1979; for CHIRPS: 1981; for TAMSAT & ARC: 1983">Year:</label>
+              <label for="start_year" class="form-label" data-bs-toggle="tooltip" title="For CPC &amp; GPCP: start year begins at 1979; for CHIRPS: 1981; for TAMSAT &amp; ARC: 1983">Year:</label>
               <select id="start_year" name="start_year" class="form-select"></select>
             </div>
           </div>
@@ -270,9 +272,9 @@
               <ul>
                 <li>Select the <em>Start Date</em> (day, month, and year) and <em>End Date</em> from the dropdowns. Note that available start years differ by dataset:
                   <ul>
-                    <li>CPC & GPCP: begin at <strong>1979</strong></li>
+                    <li>CPC &amp; GPCP: begin at <strong>1979</strong></li>
                     <li>CHIRPS: begin at <strong>1981</strong></li>
-                    <li>TAMSAT & ARC: begin at <strong>1983</strong></li>
+                    <li>TAMSAT &amp; ARC: begin at <strong>1983</strong></li>
                   </ul>
                 </li>
               </ul>
@@ -294,17 +296,17 @@
             <li>
               <strong>Download NetCDF:</strong>
               <ul>
-                <li>Once you confirm your selections, click <em>Download NetCDF</em>. The application will internally construct the download URL and fetch your data file. A spinner will indicate that the download is in progress.</li>
+                <li>After confirming, click <em>Download NetCDF</em>. The application internally constructs the download URL and fetches your data file. A spinner indicates that the download is in progress.</li>
               </ul>
             </li>
             <li>
               <strong>Save/Load Parameters:</strong>
               <ul>
-                <li>You can download your current parameters as a JSON file using a file name in the format <code>Dataset_Version_Frequency_Resolution_Variable.json</code>.</li>
+                <li>You can download your current parameters as a JSON file with a file name in the format <code>Dataset_Version_Frequency_Resolution_Variable.json</code>.</li>
               </ul>
             </li>
           </ol>
-          <p>Once you verify and debug all the links and the code, you can remove or comment out any URL debug display if desired.</p>
+          <p>Once you verify and debug all links and code, you can remove or comment out any URL debug displays if desired.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -322,56 +324,60 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <ul>
-            <li><strong>Dataset:</strong> Choose between CHIRPS, CPC, TAMSAT, ARC, and GPCP data sources.</li>
-            <li><strong>Version:</strong>
+          <dl>
+            <dt>What datasets are available?</dt>
+            <dd>CHIRPS, CPC, TAMSAT, ARC, and GPCP.</dd>
+            <dt>What versions are available for the CHIRPS dataset?</dt>
+            <dd>v2.0 and v3.0.</dd>
+            <dt>What version is available for the CPC dataset?</dt>
+            <dd>v1p0.</dd>
+            <dt>What version is available for the TAMSAT dataset?</dt>
+            <dd>v3p1.</dd>
+            <dt>What version is available for the ARC dataset?</dt>
+            <dd>ARC2.</dd>
+            <dt>What version is available for the GPCP dataset?</dt>
+            <dd>V2p3.</dd>
+            <dt>What frequency options are available?</dt>
+            <dd>
               <ul>
-                <li>CHIRPS: choose between v2.0 and v3.0</li>
-                <li>CPC: fixed to v1p0</li>
-                <li>TAMSAT: fixed to v3p1</li>
-                <li>ARC: fixed to ARC2</li>
-                <li>GPCP: fixed to V2p3</li>
+                <li>CHIRPS: daily, daily‑improved, dekad, or monthly (monthly forces a resolution of 0.05 and uses the variable .precipitation).</li>
+                <li>CPC: daily or monthly (with additional temperature options).</li>
+                <li>TAMSAT: daily, dekadal, or monthly.</li>
+                <li>ARC: daily or monthly.</li>
+                <li>GPCP: monthly (fixed).</li>
               </ul>
-            </li>
-            <li><strong>Frequency:</strong>
+            </dd>
+            <dt>What resolution options are available?</dt>
+            <dd>
               <ul>
-                <li>CHIRPS: daily, daily‑improved, dekad, or monthly</li>
-                <li>CPC: daily or monthly</li>
-                <li>TAMSAT: daily, dekadal, or monthly</li>
-                <li>ARC: daily or monthly</li>
-                <li>GPCP: fixed to monthly</li>
+                <li>CHIRPS: For monthly frequency only 0.05 is allowed; for other frequencies, 0.05 and 0.25 are available.</li>
+                <li>CPC: 0.5.</li>
+                <li>TAMSAT: 0.0375.</li>
+                <li>ARC: 0.1.</li>
+                <li>GPCP: 2.5.</li>
               </ul>
-            </li>
-            <li><strong>Resolution:</strong>
+            </dd>
+            <dt>What variable options are available?</dt>
+            <dd>
               <ul>
-                <li>CHIRPS: For monthly frequency (both v2.0 and v3.0) only 0.05 is allowed (the resolution parameter is omitted from the URL)</li>
-                <li>CPC: 0.5</li>
-                <li>TAMSAT: 0.0375</li>
-                <li>ARC: 0.1</li>
-                <li>GPCP: 2.5</li>
-              </ul>
-            </li>
-            <li><strong>Variable:</strong>
-              <ul>
-                <li>CPC:
+                <li>CPC: 
                   <ul>
-                    <li>Daily: Precipitation, Maximum Temperature, Minimum Temperature</li>
-                    <li>Monthly: Precipitation, Maximum Temperature, Minimum Temperature, Mean Temperature</li>
+                    <li>Daily: Precipitation, Maximum Temperature, Minimum Temperature.</li>
+                    <li>Monthly: Precipitation, Maximum Temperature, Minimum Temperature, Mean Temperature.</li>
                   </ul>
                 </li>
-                <li>CHIRPS, TAMSAT, ARC, GPCP: fixed to precipitation (for monthly CHIRPS, variable is set to <em>.precipitation</em>)</li>
+                <li>CHIRPS, TAMSAT, ARC, GPCP: Fixed to precipitation (with CHIRPS monthly using .precipitation).</li>
               </ul>
-            </li>
-            <li><strong>Temporal Filtering:</strong>
-              <ul>
-                <li>CPC & GPCP: start year begins at 1979</li>
-                <li>CHIRPS: start year begins at 1981</li>
-                <li>TAMSAT & ARC: start year begins at 1983</li>
-                <li>The end date is taken from user input.</li>
-              </ul>
-            </li>
-            <li><strong>Spatial Filtering:</strong> Define the geographic area using latitude and longitude.</li>
-          </ul>
+            </dd>
+            <dt>How does temporal filtering work?</dt>
+            <dd>You set the start and end dates using dropdowns. Note that start years differ by dataset: CPC & GPCP begin at 1979, CHIRPS at 1981, and TAMSAT & ARC at 1983.</dd>
+            <dt>How does spatial filtering work?</dt>
+            <dd>Enter minimum and maximum longitude/latitude values and click "Show Spatial Selection on Map" to visualize your area.</dd>
+            <dt>How does the download process work?</dt>
+            <dd>After reviewing your selections, clicking "Download NetCDF" will internally construct the download URL, cache the response if possible, and show a spinner until the file is downloaded.</dd>
+            <dt>How can I save or load parameters?</dt>
+            <dd>You can download your parameters as a JSON file (named in the format Dataset_Version_Frequency_Resolution_Variable.json) and reload them later using the "Upload JSON file" option.</dd>
+          </dl>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -385,28 +391,52 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="featuresModalLabel">Application Features & Tech Stack</h5>
+          <h5 class="modal-title" id="featuresModalLabel">Application Features</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <h4>Key Features</h4>
+          <p>The Climate &amp; Geo‑Spatial Data Downloader app design has the following key features:</p>
           <ul>
-            <li><strong>Responsive and Modern UI:</strong> Built using Bootstrap 5 with the Flatly theme for a clean, mobile-friendly design.</li>
-            <li><strong>Dynamic Form Inputs:</strong> The form automatically updates options based on dataset selection, version, frequency, and resolution.</li>
-            <li><strong>Interactive Mapping:</strong> Integration with Leaflet for spatial selection visualization.</li>
-            <li><strong>Robust Download Handling:</strong> Internally constructs download URLs, uses caching, and shows a spinner during downloads.</li>
-            <li><strong>Save/Load Parameters:</strong> Users can save their selections as JSON for later reuse.</li>
+            <li><strong>Responsive UI:</strong> Crafted with Tailwind CSS and a custom Bootstrap theme for a modern, eye‑catching look on any device.</li>
+            <li><strong>Dynamic Forms:</strong> Options update instantly based on your data choices.</li>
+            <li><strong>Desktop &amp; Mobile Ready:</strong> Optimized layout for seamless use everywhere.</li>
+            <li><strong>Helpful Tooltips:</strong> Quick guidance for every filter at your fingertips.</li>
+            <li><strong>Help &amp; FAQ Menus:</strong> Instant support just a click away.</li>
+            <li><strong>Interactive Mapping:</strong> Leaflet‑powered maps with multiple basemaps to explore.</li>
+            <li><strong>Smooth Downloads:</strong> Builds URLs internally, caches data, and shows a spinner with text during downloads.</li>
+            <li><strong>Keyboard-Friendly:</strong> Full keyboard support for effortless navigation.</li>
+            <li><strong>Accessible Design:</strong> High‑contrast colors, clear fonts, and interactive elements that meet accessibility standards.</li>
+            <li><strong>Save/Load Options:</strong> Save your settings as JSON and reload them anytime.</li>
           </ul>
-          <h4>Tech Stack</h4>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tech Stack Modal -->
+  <div class="modal fade" id="techStackModal" tabindex="-1" aria-labelledby="techStackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="techStackModalLabel">Tech Stack</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>The Climate &amp; Geo‑Spatial Data Downloader app is a modern web development solution, blending powerful tools into a seamless experience. Here's the tech stack:</p>
           <ul>
-            <li><strong>HTML5 & CSS3:</strong> Structure and styling of the application.</li>
-            <li><strong>Bootstrap 5:</strong> Responsive layout and UI components.</li>
-            <li><strong>Bootswatch Flatly Theme:</strong> Custom, modern design for enhanced user experience.</li>
-            <li><strong>JavaScript:</strong> Dynamic form handling, URL construction, and file download logic.</li>
-            <li><strong>Leaflet:</strong> Interactive mapping and spatial data visualization.</li>
-            <li><strong>shp.js:</strong> (Optional) For shapefile processing if needed.</li>
+            <li><strong>Flask:</strong> Python web framework that powers the server‑side and serves the app smoothly.</li>
+            <li><strong>HTML5 &amp; CSS3:</strong> Provides the app's structure and styles the interface.</li>
+            <li><strong>Bootstrap 5:</strong> Delivers responsive grids, modals, and sleek components for a modern front‑end.</li>
+            <li><strong>Bootswatch Flatly Theme:</strong> Enhances the interface with a modern, clean, and aesthetic design.</li>
+            <li><strong>JavaScript:</strong> Powers interactivity including dynamic form updates, URL construction, and file downloads.</li>
+            <li><strong>Leaflet:</strong> Displays lightweight and interactive maps with multiple basemaps.</li>
+            <li><strong>Gunicorn:</strong> A production‑grade WSGI server that runs the Flask app efficiently on Render cloud.</li>
+            <li><strong>GitHub Actions:</strong> Automates testing to catch bugs before deployment.</li>
+            <li><strong>Render:</strong> Hosts the application, ensuring it remains live and accessible (750 hours/month free).</li>
           </ul>
-          <p>This application is designed to be modular and scalable, allowing for future enhancements and integration with additional data sources and visualization tools.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -952,7 +982,7 @@
                        end_day + "%20" + end_month + "%20" + end_year + "/RANGE/data.nc";
         let variableParam = ".prcp"; // default for CHIRPS
         
-        // For CHIRPS monthly, remove the resolution segment and use .precipitation
+        // For CHIRPS monthly, use .precipitation and remove resolution from URL
         if (frequencyVal === "monthly") {
           variableParam = ".precipitation";
           return baseURL +
