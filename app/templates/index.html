@@ -28,6 +28,11 @@
       text-align: center;
       margin-top: 1rem;
     }
+    /* Optional style for the visit counter badge */
+    #visitCounter {
+      font-weight: bold;
+      color: #ffc107;
+    }
   </style>
   <!-- Include shp.js if needed -->
   <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
@@ -39,7 +44,11 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top" role="navigation" aria-label="Main Navigation">
     <div class="container">
-      <a class="navbar-brand" href="#">Climate Data Downloader</a>
+      <a class="navbar-brand" href="#">
+        Climate Data Downloader
+        <!-- Visit counter added as a badge next to the brand -->
+        <span id="visitCounter" class="ms-3"></span>
+      </a>
       <div class="d-flex">
         <!-- Help Menu Item with extra spacing -->
         <a href="#" class="nav-link text-white me-3" data-bs-toggle="modal" data-bs-target="#helpModal">Help</a>
@@ -302,7 +311,7 @@
             <li>
               <strong>Save/Load Parameters:</strong>
               <ul>
-                <li>You can download your current parameters as a JSON file with a file name in the format <code>Dataset_Version_Frequency_Resolution_Variable.json</code>.</li>
+                <li>You can download your parameters as a JSON file with a file name in the format <code>Dataset_Version_Frequency_Resolution_Variable.json</code>.</li>
               </ul>
             </li>
           </ol>
@@ -340,8 +349,8 @@
             <dt>What frequency options are available?</dt>
             <dd>
               <ul>
-                <li>CHIRPS: daily, daily‑improved, dekad, or monthly (monthly forces a resolution of 0.05 and uses the variable .precipitation).</li>
-                <li>CPC: daily or monthly (with additional temperature options).</li>
+                <li>CHIRPS: daily, daily‑improved, dekad, or monthly (monthly forces a resolution of 0.05 and uses the variable <em>.precipitation</em>).</li>
+                <li>CPC: daily or monthly (with additional temperature options available).</li>
                 <li>TAMSAT: daily, dekadal, or monthly.</li>
                 <li>ARC: daily or monthly.</li>
                 <li>GPCP: monthly (fixed).</li>
@@ -350,7 +359,7 @@
             <dt>What resolution options are available?</dt>
             <dd>
               <ul>
-                <li>CHIRPS: For monthly frequency only 0.05 is allowed; for other frequencies, 0.05 and 0.25 are available.</li>
+                <li>CHIRPS: For monthly frequency, only 0.05 is allowed; for other frequencies, 0.05 and 0.25 are available.</li>
                 <li>CPC: 0.5.</li>
                 <li>TAMSAT: 0.0375.</li>
                 <li>ARC: 0.1.</li>
@@ -360,23 +369,23 @@
             <dt>What variable options are available?</dt>
             <dd>
               <ul>
-                <li>CPC: 
+                <li>CPC:
                   <ul>
                     <li>Daily: Precipitation, Maximum Temperature, Minimum Temperature.</li>
                     <li>Monthly: Precipitation, Maximum Temperature, Minimum Temperature, Mean Temperature.</li>
                   </ul>
                 </li>
-                <li>CHIRPS, TAMSAT, ARC, GPCP: Fixed to precipitation (with CHIRPS monthly using .precipitation).</li>
+                <li>CHIRPS, TAMSAT, ARC, and GPCP: Fixed to precipitation (for monthly CHIRPS, the variable is set to <em>.precipitation</em>).</li>
               </ul>
             </dd>
             <dt>How does temporal filtering work?</dt>
-            <dd>You set the start and end dates using dropdowns. Note that start years differ by dataset: CPC & GPCP begin at 1979, CHIRPS at 1981, and TAMSAT & ARC at 1983.</dd>
+            <dd>You set the start and end dates using dropdowns; available start years differ by dataset (e.g., CPC &amp; GPCP begin at 1979, CHIRPS at 1981, and TAMSAT &amp; ARC at 1983).</dd>
             <dt>How does spatial filtering work?</dt>
-            <dd>Enter minimum and maximum longitude/latitude values and click "Show Spatial Selection on Map" to visualize your area.</dd>
+            <dd>Enter the minimum and maximum longitude/latitude values and click "Show Spatial Selection on Map" to view your selected area.</dd>
             <dt>How does the download process work?</dt>
-            <dd>After reviewing your selections, clicking "Download NetCDF" will internally construct the download URL, cache the response if possible, and show a spinner until the file is downloaded.</dd>
+            <dd>After reviewing your selections, clicking "Download NetCDF" constructs the download URL internally, caches the response if possible, and shows a spinner until the file is downloaded.</dd>
             <dt>How can I save or load parameters?</dt>
-            <dd>You can download your parameters as a JSON file (named in the format Dataset_Version_Frequency_Resolution_Variable.json) and reload them later using the "Upload JSON file" option.</dd>
+            <dd>You can download your current parameters as a JSON file (named in the format <code>Dataset_Version_Frequency_Resolution_Variable.json</code>) and later reload them with the "Upload JSON file" option.</dd>
           </dl>
         </div>
         <div class="modal-footer">
@@ -401,8 +410,6 @@
             <li><strong>Dynamic Forms:</strong> Options update instantly based on your data choices.</li>
             <li><strong>Desktop &amp; Mobile Ready:</strong> Optimized layout for seamless use everywhere.</li>
             <li><strong>Helpful Tooltips:</strong> Quick guidance for every filter at your fingertips.</li>
-            <li><strong>Modular Design:</strong> With a modular design, additional data sources, analytical tools, or visualization options can be integrated making the app scalable and flexible.</li>
-            <li><strong>Efficient Data Caching:</strong> By incorporating caching mechanisms the tool reduces redundant data transfers and network load improving overall efficiency.</li>
             <li><strong>Help &amp; FAQ Menus:</strong> Instant support just a click away.</li>
             <li><strong>Interactive Mapping:</strong> Leaflet‑powered maps with multiple basemaps to explore.</li>
             <li><strong>Smooth Downloads:</strong> Builds URLs internally, caches data, and shows a spinner with text during downloads.</li>
@@ -453,6 +460,12 @@
   
   <script>
     document.addEventListener("DOMContentLoaded", function() {
+      // Visit Counter: Check localStorage and update counter value.
+      let visitCount = localStorage.getItem("visitCount") || 0;
+      visitCount = parseInt(visitCount) + 1;
+      localStorage.setItem("visitCount", visitCount);
+      document.getElementById("visitCounter").innerText = `Visitors: ${visitCount}`;
+
       // Toggle Input Method (JSON upload)
       const fillFormRadio = document.getElementById("fillFormRadio");
       const uploadJSONRadio = document.getElementById("uploadJSONRadio");
@@ -984,7 +997,7 @@
                        end_day + "%20" + end_month + "%20" + end_year + "/RANGE/data.nc";
         let variableParam = ".prcp"; // default for CHIRPS
         
-        // For CHIRPS monthly, use .precipitation and remove resolution from URL
+        // For CHIRPS monthly, use .precipitation and remove the resolution segment from the URL
         if (frequencyVal === "monthly") {
           variableParam = ".precipitation";
           return baseURL +
