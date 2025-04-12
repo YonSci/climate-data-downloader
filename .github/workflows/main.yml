@@ -28,6 +28,6 @@ jobs: # Define tasks to run
 
       - name: Run tests # Step 4: Placeholder for tests
         run: |
-          pytest
+          pytest -v 
           echo "No tests defined yet. Add your test command here (e.g., pytest)."
           # Replace with actual test command when ready, e.g., pytest
